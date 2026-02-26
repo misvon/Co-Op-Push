@@ -139,16 +139,20 @@ export const webSocketServer = {
         io.on('connection', (socket) => {
             console.log('User connected:', socket.id);
 
-            gameState.players[socket.id] = {
-                id: socket.id,
-                x: Math.random() * 700,
-                y: Math.random() * 500,
-                color: `hsl(${Math.random() * 360}, 70%, 50%)`,
-                inputs: { up: false, down: false, left: false, right: false }
-            };
+            socket.on('join', (data) => {
+                const { name } = data;
+                gameState.players[socket.id] = {
+                    id: socket.id,
+                    name: name || 'Anonymous',
+                    x: Math.random() * 700,
+                    y: Math.random() * 500,
+                    color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                    inputs: { up: false, down: false, left: false, right: false }
+                };
 
-            socket.emit('init', { id: socket.id, state: gameState });
-            emitWithLatency('playerJoined', gameState.players[socket.id]);
+                socket.emit('init', { id: socket.id, state: gameState });
+                emitWithLatency('playerJoined', gameState.players[socket.id]);
+            });
 
             socket.on('input', (inputs) => {
                 const handle = () => {

@@ -15,7 +15,16 @@
 
 	let myId = $state("");
 	let isConnected = $state(false);
+	let hasJoined = $state(false);
+	let playerName = $state("");
 	let keys = $state(new Set<string>());
+
+	function handleJoin() {
+		if (socket && playerName.trim()) {
+			socket.emit("join", { name: playerName.trim() });
+			hasJoined = true;
+		}
+	}
 
 	function sendInputs() {
 		if (!socket || !isConnected) {
@@ -179,7 +188,6 @@
 						fill={player.color}
 						fill-opacity="0.15"
 					/>
-					<!-- Player Body -->
 					<rect
 						x={player.x}
 						y={player.y}
@@ -190,16 +198,18 @@
 						stroke="white"
 						stroke-width={player.id === myId ? 2 : 0}
 					/>
-					{#if player.id === myId}
-						<text
-							x={player.x + 10}
-							y={player.y - 10}
-							text-anchor="middle"
-							fill="white"
-							font-size="10"
-							font-weight="bold">YOU</text
-						>
-					{/if}
+					<text
+						x={player.x + 10}
+						y={player.y - 10}
+						text-anchor="middle"
+						fill="white"
+						font-size="12"
+						font-weight="bold"
+						style="text-shadow: 0 0 5px rgba(0,0,0,0.5); pointer-events: none;"
+					>
+						{player.name || "Anonymous"}
+						{player.id === myId ? "(YOU)" : ""}
+					</text>
 				</g>
 			{/each}
 		</svg>
@@ -213,6 +223,26 @@
 			<button class="btn-restart" onclick={handleReset}>Play Again</button
 			>
 		</div>
+
+		<!-- Join Overlay -->
+		{#if !hasJoined}
+			<div class="join-overlay">
+				<div class="join-card">
+					<h2>Welcome to Co-Op Push</h2>
+					<p>Enter your name to join the game</p>
+					<input
+						type="text"
+						bind:value={playerName}
+						placeholder="Your Name"
+						onkeydown={(e) => e.key === "Enter" && handleJoin()}
+						maxlength="15"
+					/>
+					<button onclick={handleJoin} disabled={!playerName.trim()}>
+						Join Game
+					</button>
+				</div>
+			</div>
+		{/if}
 	</div>
 
 	<div class="hud">
@@ -261,5 +291,99 @@
 		border-radius: 50%;
 		cursor: pointer;
 		box-shadow: 0 0 5px var(--accent-secondary);
+	}
+
+	.join-overlay {
+		position: absolute;
+		inset: 0;
+		background: rgba(15, 10, 30, 0.9);
+		backdrop-filter: blur(8px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 100;
+		border-radius: 12px;
+	}
+
+	.join-card {
+		background: var(--glass-bg);
+		border: 1px solid var(--glass-border);
+		padding: 2.5rem;
+		border-radius: 20px;
+		text-align: center;
+		max-width: 400px;
+		width: 90%;
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+		animation: slideUp 0.4s ease-out;
+	}
+
+	@keyframes slideUp {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.join-card h2 {
+		margin-bottom: 0.5rem;
+		background: linear-gradient(
+			135deg,
+			#fff 0%,
+			var(--text-secondary) 100%
+		);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.join-card p {
+		color: var(--text-secondary);
+		margin-bottom: 2rem;
+		font-size: 0.9rem;
+	}
+
+	.join-card input {
+		width: 100%;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid var(--glass-border);
+		padding: 1rem;
+		border-radius: 10px;
+		color: white;
+		font-size: 1rem;
+		margin-bottom: 1.5rem;
+		transition: all 0.3s ease;
+	}
+
+	.join-card input:focus {
+		outline: none;
+		border-color: var(--accent-secondary);
+		background: rgba(255, 255, 255, 0.08);
+		box-shadow: 0 0 15px rgba(0, 229, 255, 0.1);
+	}
+
+	.join-card button {
+		width: 100%;
+		padding: 1rem;
+		background: var(--accent-secondary);
+		border: none;
+		border-radius: 10px;
+		color: #0f0a1e;
+		font-weight: bold;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.join-card button:hover:not(:disabled) {
+		transform: translateY(-2px);
+		box-shadow: 0 5px 20px rgba(0, 229, 255, 0.4);
+	}
+
+	.join-card button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 </style>
