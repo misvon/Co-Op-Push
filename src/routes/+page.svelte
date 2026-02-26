@@ -18,7 +18,10 @@
 	let keys = $state(new Set<string>());
 
 	function sendInputs() {
-		if (!socket || !isConnected) return;
+		if (!socket || !isConnected) {
+			return;
+		}
+		
 		socket.emit("input", {
 			up: keys.has("ArrowUp") || keys.has("w"),
 			down: keys.has("ArrowDown") || keys.has("s"),
