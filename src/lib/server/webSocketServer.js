@@ -33,6 +33,37 @@ export const webSocketServer = {
                 rect1.y + rect1.height > rect2.y;
         };
 
+        const getRandomSpawnPosition = () => {
+            let pos;
+            let collision;
+            let attempts = 0;
+            do {
+                collision = false;
+                pos = {
+                    x: Math.random() * (800 - PLAYER_SIZE),
+                    y: Math.random() * (600 - PLAYER_SIZE),
+                    width: PLAYER_SIZE,
+                    height: PLAYER_SIZE
+                };
+
+                // Check walls
+                for (const wall of gameState.obstacles) {
+                    if (checkCollision(pos, wall)) {
+                        collision = true;
+                        break;
+                    }
+                }
+
+                // Check box
+                if (checkCollision(pos, gameState.box)) {
+                    collision = true;
+                }
+
+                attempts++;
+            } while (collision && attempts < 100);
+            return pos;
+        };
+
         const updatePhysics = () => {
             if (gameState.status !== 'playing') return;
 
@@ -141,11 +172,12 @@ export const webSocketServer = {
 
             socket.on('join', (data) => {
                 const { name } = data;
+                const spawnPos = getRandomSpawnPosition();
                 gameState.players[socket.id] = {
                     id: socket.id,
                     name: name || 'Anonymous',
-                    x: Math.random() * 700,
-                    y: Math.random() * 500,
+                    x: spawnPos.x,
+                    y: spawnPos.y,
                     color: `hsl(${Math.random() * 360}, 70%, 50%)`,
                     inputs: { up: false, down: false, left: false, right: false }
                 };
@@ -176,8 +208,9 @@ export const webSocketServer = {
                     status: 'playing'
                 };
                 for (const id in gameState.players) {
-                    gameState.players[id].x = Math.random() * 700;
-                    gameState.players[id].y = Math.random() * 500;
+                    const spawnPos = getRandomSpawnPosition();
+                    gameState.players[id].x = spawnPos.x;
+                    gameState.players[id].y = spawnPos.y;
                 }
                 emitWithLatency('stateUpdate', gameState);
             });
