@@ -1,15 +1,21 @@
-# sv
+# Co-Op Push
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Welcome to **Co-Op Push**, a real-time multiplayer cooperative game built with SvelteKit and Socket.io.
 
-## Creating a project
+## About the Game
 
-If you're seeing this, you've probably already done this step. Congrats!
+In Co-Op Push, players work together in a shared arena to accomplish a single goal: maneuvering a giant box into the designated Goal Zone. Players must coordinate their movements to navigate around obstacles and push the box successfully. The game features real-time state synchronization, latency simulation controls, and a retro-style glowing aesthetic.
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## How to Play
+
+1. **Join the Game**: Enter your preferred player name when you open the game.
+2. **Move Your Character**: Use the **W, A, S, D** keys or the **Arrow Keys** to move your player avatar around the arena.
+3. **Push the Box**: Move your character against the glowing yellow box to push it. You might need help from other players to steer it effectively.
+4. **Win**: Guide the box into the Goal Zone to win the game!
+
+## Getting Started
+
+To run this project locally, you will need Node.js installed.
 
 To recreate this project with the same configuration:
 

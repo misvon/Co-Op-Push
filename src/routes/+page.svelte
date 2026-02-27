@@ -3,13 +3,37 @@
 	import { onMount } from "svelte";
 	import { socket } from "$lib/socket";
 
+	interface Player {
+		id: string;
+		name: string;
+		x: number;
+		y: number;
+		color: string;
+	}
+
+	interface Rect {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	}
+
+	interface GameState {
+		players: Record<string, Player>;
+		box: Rect;
+		goal: Rect;
+		obstacles: Rect[];
+		status: "playing" | "won";
+		latency: number;
+	}
+
 	// Game state using Svelte 5 runes
-	let gameState = $state({
-		players: {} as Record<string, any>,
+	let gameState = $state<GameState>({
+		players: {},
 		box: { x: 375, y: 275, width: 50, height: 50 },
 		goal: { x: 700, y: 250, width: 100, height: 100 },
-		obstacles: [] as any[],
-		status: "playing" as "playing" | "won",
+		obstacles: [],
+		status: "playing",
 		latency: 0,
 	});
 
@@ -30,7 +54,7 @@
 		if (!socket || !isConnected) {
 			return;
 		}
-		
+
 		socket.emit("input", {
 			up: keys.has("ArrowUp") || keys.has("w"),
 			down: keys.has("ArrowDown") || keys.has("s"),
@@ -54,20 +78,20 @@
 			isConnected = true;
 		});
 
-		socket.on("init", (data) => {
+		socket.on("init", (data: { id: string; state: GameState }) => {
 			myId = data.id;
 			gameState = data.state;
 		});
 
-		socket.on("stateUpdate", (newState) => {
+		socket.on("stateUpdate", (newState: GameState) => {
 			gameState = newState;
 		});
 
-		socket.on("playerJoined", (player) => {
+		socket.on("playerJoined", (player: Player) => {
 			gameState.players[player.id] = player;
 		});
 
-		socket.on("playerLeft", (id) => {
+		socket.on("playerLeft", (id: string) => {
 			delete gameState.players[id];
 		});
 
